@@ -7,11 +7,12 @@ using RabbitMQ.Consumer.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using static RabbitMQ.Consumer.Core.Command.RepescagemAtivaCommand;
 
 namespace RabbitMQ.Consumer.Core
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {
@@ -38,11 +39,13 @@ namespace RabbitMQ.Consumer.Core
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += (model, ea) =>
             {
+                Thread.Sleep(2000);
                 var bodys = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(bodys);
                 var objeto = JsonConvert.DeserializeObject<ImportacaoRepescagemAtivaViewModel>(message);
                 listImportacao.Add(objeto);
                 objeto.Id = 0;
+
                 var result = RepescagemAtivaCommand.EnviarCPFsForRepescagemAtivaImportacao(objeto, producerCoreConfiguration.RepescagemAtivaWebApiUrl);
 
                 if (result)
